@@ -157,10 +157,10 @@ Deploy Caddy to serve custom `.home` domains with local TLS generation.
         ports:
           - "80:80"
           - "443:443"
+        command: caddy reverse-proxy --from vault.home --to 192.168.0.26:8081 --internal-certs
         volumes:
           - caddy_data:/data
           - caddy_config:/config
-        entrypoint: ["caddy", "reverse-proxy", "--from", "https://vault.home", "--to", "http://192.168.0.26:8081", "--internal-tls"]
 
     volumes:
       caddy_data:
@@ -173,7 +173,7 @@ Deploy Caddy to serve custom `.home` domains with local TLS generation.
 Bitwarden Web Client builds strictly enforce secure contexts (`https://` protocols or `localhost`) to enable JavaScript WebCrypto primitives necessary for client-side password hashing.
 
 * **Method A: Native TLS Termination via Reverse Proxy (Recommended)**  
-  By utilizing Caddy with the `--internal-tls` flag or Nginx Proxy Manager with custom SSL certificates, all browser traffic to `https://vault.home` is served over HTTPS, fulfilling browser security constraints natively.
+  By utilizing Caddy with the `--internal-certs` flag or Nginx Proxy Manager with custom SSL certificates, all browser traffic to `https://vault.home` is served over HTTPS, fulfilling browser security constraints natively.
 
 * **Method B: Browser Flags for HTTP Local Testing**  
   For environments operating without SSL certificates, Chromium-based browsers (Chrome, Edge, Opera) allow manual overrides for specific HTTP origins:
