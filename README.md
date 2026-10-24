@@ -28,7 +28,8 @@ The repository is intended to function as technical documentation rather than a 
 - [8. Security and Reliability Considerations](#8-security-and-reliability-considerations)
 - [9. Verification and Operations](#9-verification-and-operations)
 - [10. Known Limitations and Future Improvements](#10-known-limitations-and-future-improvements)
-- [11. References](#11-references)
+- [11. Repository Structure](#11-repository-structure)
+- [12. References](#12-references)
 
 ---
 
@@ -436,7 +437,47 @@ The following items are recommended follow-up work; they should not be interpret
 - [ ] Record validation results, including browser trust of the internal certificate authority.
 - [ ] Add hardware-acceleration configuration only after confirming the host's supported graphics hardware and drivers.
 
-## 11. References
+## 11. Repository Structure
+
+The repository separates the overview from detailed operational documentation and individual service deployments.
+
+\`\`\`text
+ubuntu-homelab-docker-guide/
+├── README.md
+├── .gitignore
+├── docs/
+│   ├── architecture.md
+│   ├── deployment.md
+│   ├── security.md
+│   └── operations.md
+└── compose/
+    ├── portainer/compose.yaml
+    ├── pihole/compose.yaml
+    ├── vaultwarden/compose.yaml
+    ├── jellyfin/compose.yaml
+    └── caddy/
+        ├── compose.yaml
+        └── Caddyfile
+\`\`\`
+
+### Detailed documentation
+
+- [System architecture](docs/architecture.md)
+- [Deployment procedure](docs/deployment.md)
+- [Security considerations](docs/security.md)
+- [Operations runbook](docs/operations.md)
+
+### Compose deployment files
+
+- [Portainer](compose/portainer/compose.yaml)
+- [Pi-hole](compose/pihole/compose.yaml)
+- [Vaultwarden](compose/vaultwarden/compose.yaml)
+- [Jellyfin](compose/jellyfin/compose.yaml)
+- [Caddy](compose/caddy/compose.yaml) and [Caddyfile](compose/caddy/Caddyfile)
+
+Before deploying Caddy and Vaultwarden, create their shared Docker network with \`docker network create homelab_proxy\`. Review each Compose file, replace sample host values where required, and follow the deployment procedure. These files are starting configurations and have not been validated against the user's live host.
+
+## 12. References
 
 Consult the official project documentation for version-specific instructions and security recommendations:
 
