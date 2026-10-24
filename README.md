@@ -441,7 +441,7 @@ The following items are recommended follow-up work; they should not be interpret
 
 The repository separates the overview from detailed operational documentation and individual service deployments.
 
-\`\`\`text
+```text
 ubuntu-homelab-docker-guide/
 ├── README.md
 ├── .gitignore
@@ -458,7 +458,7 @@ ubuntu-homelab-docker-guide/
     └── caddy/
         ├── compose.yaml
         └── Caddyfile
-\`\`\`
+```
 
 ### Detailed documentation
 
@@ -475,7 +475,7 @@ ubuntu-homelab-docker-guide/
 - [Jellyfin](compose/jellyfin/compose.yaml)
 - [Caddy](compose/caddy/compose.yaml) and [Caddyfile](compose/caddy/Caddyfile)
 
-Before deploying Caddy and Vaultwarden, create their shared Docker network with \`docker network create homelab_proxy\`. Review each Compose file, replace sample host values where required, and follow the deployment procedure. These files are starting configurations and have not been validated against the user's live host.
+Before deploying Caddy and Vaultwarden, create their shared Docker network with `docker network create homelab_proxy`. Review each Compose file, replace sample host values where required, and follow the deployment procedure. These files are starting configurations and have not been validated against the user's live host.
 
 ## 12. References
 
