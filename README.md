@@ -68,14 +68,14 @@ The examples do **not** constitute a high-availability architecture. They do not
 
 ## 3. System Environment
 
-The values below reflect the example environment used throughout this documentation. Replace them with the values applicable to the target host before deployment.
+The values below are generic examples or placeholders, not details of a specific host. Set your own values locally before deployment, and do not publish your actual LAN address, username, home-directory path, or location/time zone if you want to keep them private.
 
 | Parameter | Example value | Notes |
 |---|---|---|
 | Operating system | Ubuntu Server 24.04 LTS | Headless Linux host |
 | Hostname | `ubuntu-homelab` | Example host identity |
-| LAN address | `192.168.0.26` | Must be reserved or assigned statically in the local network |
-| Time zone | `Asia/Kuala_Lumpur` | Adjust to the deployment location |
+| LAN address | `<LAN_IP>` | Placeholder; replace locally with the host's LAN address |
+| Time zone | `Etc/UTC` | Generic default; override locally if needed |
 | Container runtime | Docker Engine | Installed from Docker's official APT repository |
 | Deployment format | Docker Compose | Compose files should be maintained with the project |
 | Administration | SSH | Restrict access to trusted users and networks |
@@ -112,7 +112,7 @@ Pi-hole does not automatically create DNS records for every `.home` hostname. Lo
                          |
               +-----------------------+
               | Ubuntu Server host    |
-              | Example: 192.168.0.26 |
+              | Example: <LAN_IP> |
               +-----------------------+
                   |       |       |
                   |       |       +----------------------+
@@ -257,14 +257,14 @@ services:
       - "53:53/udp"
       - "8080:80/tcp"
     environment:
-      TZ: "Asia/Kuala_Lumpur"
-      FTLCONF_LOCAL_IPV4: "192.168.0.26"
+      TZ: "${TZ:-Etc/UTC}"
+      FTLCONF_LOCAL_IPV4: "${PIHOLE_IPV4:?Set PIHOLE_IPV4 in your environment}"
     volumes:
       - ./etc-pihole:/etc/pihole
 
 ```
 
-Check the current Pi-hole container documentation for version-specific environment variables and persistence requirements before deployment. The host address must match the actual server address. Ensure another resolver or service is not already occupying port 53.
+Check the current Pi-hole container documentation for version-specific environment variables and persistence requirements before deployment. Set `PIHOLE_IPV4` to the actual server address in the local environment; do not commit that value if you consider it private. Ensure another resolver or service is not already occupying port 53.
 
 ### 7.3 Vaultwarden
 
@@ -300,14 +300,14 @@ services:
     volumes:
       - jellyfin_config:/config
       - jellyfin_cache:/cache
-      - /home/wan/media:/media:ro
+      - /srv/media:/media:ro
 
 volumes:
   jellyfin_config:
   jellyfin_cache:
 ```
 
-Replace `/home/wan/media` with the actual media directory. The read-only mount is suitable when Jellyfin only needs to read the library; adjust it only if the workflow requires writes. Hardware acceleration is environment-specific and must be configured separately.
+Set `JELLYFIN_MEDIA_PATH` to the actual media directory, or change the example `/srv/media` path. The read-only mount is suitable when Jellyfin only needs to read the library; adjust it only if the workflow requires writes. Hardware acceleration is environment-specific and must be configured separately.
 
 ### 7.5 Caddy
 
@@ -408,7 +408,7 @@ docker logs --tail 50 -f <container_name>
 
 ```bash
 df -h
-du -sh /home/wan/media
+du -sh /srv/media
 docker system df
 ```
 
