@@ -1,0 +1,26 @@
+# Local environment overrides and secrets
+.env
+.env.*
+!.env.example
+*.secret
+*.pem
+*.key
+
+# Persistent application data
+compose/pihole/etc-pihole/
+compose/pihole/etc-dnsmasq.d/
+compose/vaultwarden/data/
+compose/jellyfin/config/
+compose/jellyfin/cache/
+
+# Local backups and exports
+backups/
+*.bak
+*.backup
+*.dump
+
+# Editor / operating system files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
