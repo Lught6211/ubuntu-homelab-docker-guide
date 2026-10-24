@@ -9,7 +9,7 @@ services:
       - "53:53/udp"
       - "8080:80/tcp"
     environment:
-      TZ: "Asia/Kuala_Lumpur"
-      FTLCONF_LOCAL_IPV4: "${PIHOLE_IPV4:-192.168.0.26}"
+      TZ: "${TZ:-Etc/UTC}"
+      FTLCONF_LOCAL_IPV4: "${PIHOLE_IPV4:?Set PIHOLE_IPV4 in your environment}"
     volumes:
       - ./etc-pihole:/etc/pihole
