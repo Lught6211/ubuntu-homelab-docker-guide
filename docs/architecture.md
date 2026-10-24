@@ -37,7 +37,7 @@ This diagram describes logical flows, not a claim that all services are isolated
 
 ## 4. Addressing and naming
 
-The original example used `192.168.0.26` as a sample server address. Replace it with the actual address and reserve it in the router's DHCP configuration or configure a suitable static address.
+Use a generic `<LAN_IP>` placeholder in public documentation. Set the actual address locally and reserve it in the router's DHCP configuration or configure a suitable static address; avoid committing a private address to a public repository.
 
 Use a consistent private namespace. `home.arpa` is recommended for home-network naming; for example, `vault.home.arpa`. Configure the matching local DNS record in Pi-hole and use the same hostname in the Caddyfile and client bookmarks. A DNS record does not get created automatically by Caddy.
 
