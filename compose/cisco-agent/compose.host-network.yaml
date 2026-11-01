@@ -26,6 +26,7 @@ services:
     command: ["uvicorn", "app.agent:app", "--host", "127.0.0.1", "--port", "8001"]
     environment:
       CISCO_API_TOKEN: ${CISCO_API_TOKEN:?Set CISCO_API_TOKEN in the private environment file}
+      CISCO_TAILSCALE_ALLOWED_USERS: ${CISCO_TAILSCALE_ALLOWED_USERS:-}
       CISCO_SERVER_LABEL: ${CISCO_SERVER_LABEL:-HOMELAB NODE}
       CISCO_ALLOWED_ORIGINS: ${CISCO_ALLOWED_ORIGINS:-https://project-cisco.vercel.app,http://localhost:3000}
       CISCO_MANAGED_SERVICES: ${CISCO_MANAGED_SERVICES:-}

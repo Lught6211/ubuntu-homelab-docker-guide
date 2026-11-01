@@ -12,7 +12,7 @@ from urllib.parse import quote
 
 import httpx
 import psutil
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -28,8 +28,15 @@ def json_env(name: str, default: Any) -> Any:
 
 
 TOKEN = os.getenv("CISCO_API_TOKEN", "")
-if len(TOKEN) < 32:
+if TOKEN and len(TOKEN) < 32:
     raise RuntimeError("CISCO_API_TOKEN must be at least 32 characters")
+TAILSCALE_ALLOWED_USERS = {
+    user.strip().lower()
+    for user in os.getenv("CISCO_TAILSCALE_ALLOWED_USERS", "").split(",")
+    if user.strip()
+}
+if not TOKEN and not TAILSCALE_ALLOWED_USERS:
+    raise RuntimeError("Configure CISCO_API_TOKEN or CISCO_TAILSCALE_ALLOWED_USERS")
 
 SERVER_LABEL = os.getenv("CISCO_SERVER_LABEL", "HOMELAB NODE")
 MANAGED_SERVICES: dict[str, str] = json_env(
@@ -60,10 +67,14 @@ bearer = HTTPBearer(auto_error=False)
 
 
 def require_token(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
 ) -> None:
+    tailscale_user = request.headers.get("Tailscale-User-Login", "").strip().lower()
+    if tailscale_user and tailscale_user in TAILSCALE_ALLOWED_USERS:
+        return
     supplied = credentials.credentials if credentials else ""
-    if not supplied or not hmac.compare_digest(supplied, TOKEN):
+    if not TOKEN or not supplied or not hmac.compare_digest(supplied, TOKEN):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid CISCO server token")
 
 

@@ -48,7 +48,7 @@ The design prioritizes:
 
 ### CISCO private homelab connector
 
-The repository includes an optional CISCO agent under compose/cisco-agent/. It provides authenticated server and container monitoring, configured website checks, optional qBittorrent progress, and allowlisted container start/stop/restart controls over a private Tailscale HTTPS connection. Hosts with Tailscale already installed can reuse it with the host-network Compose file; the agent and Docker guard bind only to localhost. The alternate sidecar Compose file is available for hosts without Tailscale installed. Neither option exposes shell execution. See [the CISCO connector setup](docs/cisco-agent.md) for deployment details and exact permissions.
+The repository includes an optional CISCO agent under compose/cisco-agent/. It provides authenticated server and container monitoring, configured website checks, optional qBittorrent progress, and allowlisted container start/stop/restart controls over a private Tailscale HTTPS connection. Hosts with Tailscale already installed can reuse it with the host-network Compose file; the agent and Docker guard bind only to localhost and can authenticate a configured Tailscale account without an app token. The alternate sidecar Compose file is available for hosts without Tailscale installed. Neither option exposes shell execution. See [the CISCO connector setup](docs/cisco-agent.md) for deployment details and exact permissions.
 
 ### Intended users
 

@@ -15,12 +15,12 @@ The storage percentage is the agent container's root filesystem view. It is not 
 
 ## Deploy beside an existing Tailscale host
 
-If Tailscale is already installed and connected on the Docker host, use `compose/cisco-agent/compose.host-network.yaml`. This reuses that host's existing tailnet identity; it does not need a new auth key or sidecar device. The agent and Docker guard bind only to `127.0.0.1`, and Tailscale Serve provides HTTPS privately to tailnet devices.
+If Tailscale is already installed and connected on the Docker host, use `compose/cisco-agent/compose.host-network.yaml`. This reuses that host's existing tailnet identity; it does not need a new auth key or sidecar device. The agent and Docker guard bind only to `127.0.0.1`, and Tailscale Serve provides HTTPS privately to tailnet devices. You can set `CISCO_TAILSCALE_ALLOWED_USERS` to the comma-separated Tailscale login names allowed to use the dashboard; Serve adds the trusted `Tailscale-User-Login` header to requests. Because this deployment uses identity headers, keep the app bound to localhost and never enable Funnel.
 
-1. Create a private `.env` file alongside the Compose file. Set a random `CISCO_API_TOKEN` of at least 32 characters, the exact Vercel origin, optional website checks, and qBittorrent API credentials if you want download monitoring.
+1. Create a private `.env` file alongside the Compose file. Set `CISCO_TAILSCALE_ALLOWED_USERS` to the account permitted to connect, a random `CISCO_API_TOKEN` of at least 32 characters for fallback token access, the exact Vercel origin, optional website checks, and qBittorrent API credentials if you want download monitoring.
 2. Start the stack with `docker compose -f compose/cisco-agent/compose.host-network.yaml up -d --build`.
 3. Run `tailscale serve --bg --https=443 http://127.0.0.1:8001` on the host. Funnel stays disabled; the endpoint is visible only to your tailnet.
-4. In CiscoAI, open the server icon and enter `https://<host-tailnet-dns-name>/` and the same token. Keep the browser device connected to Tailscale.
+4. In CiscoAI, open the server icon and enter `https://<host-tailnet-dns-name>/`; leave the token blank to use the allowed Tailscale login, or provide the configured fallback token. Keep the browser device connected to Tailscale.
 
 Use the dashboard's server icon after connecting to see live host, container, website, and optional download status. The dashboard polls while it is open; it does not send background alerts while closed.
 
