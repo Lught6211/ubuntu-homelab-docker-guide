@@ -30,6 +30,7 @@ The repository is intended to function as technical documentation rather than a 
 - [10. Known Limitations and Future Improvements](#10-known-limitations-and-future-improvements)
 - [11. Repository Structure](#11-repository-structure)
 - [12. References](#12-references)
+- [CISCO private homelab connector](docs/cisco-agent.md)
 
 ---
 
@@ -44,6 +45,10 @@ The design prioritizes:
 - **Consistent web access:** use Caddy to route selected hostnames to internal applications and provide HTTPS using an internal certificate authority.
 - **Persistent application data:** keep service configuration and state in named volumes or explicit host directories.
 - **Operational visibility:** use container status, logs, disk-usage checks, and service-specific health pages to investigate failures.
+
+### CISCO private homelab connector
+
+The repository includes an optional CISCO agent under compose/cisco-agent/. It provides authenticated server and container monitoring, configured website checks, optional qBittorrent progress, and allowlisted container start/stop/restart controls over a private Tailscale HTTPS connection. It publishes no host ports and does not expose shell execution. See [the CISCO connector setup](docs/cisco-agent.md) for the Portainer deployment steps and exact permissions.
 
 ### Intended users
 
