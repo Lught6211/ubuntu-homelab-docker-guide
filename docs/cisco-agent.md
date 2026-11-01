@@ -13,7 +13,18 @@ The agent has no shell, command execution, container creation, container deletio
 
 The storage percentage is the agent container's root filesystem view. It is not a per-mount inventory of every host disk or media volume.
 
-## Deploy with Portainer
+## Deploy beside an existing Tailscale host
+
+If Tailscale is already installed and connected on the Docker host, use `compose/cisco-agent/compose.host-network.yaml`. This reuses that host's existing tailnet identity; it does not need a new auth key or sidecar device. The agent and Docker guard bind only to `127.0.0.1`, and Tailscale Serve provides HTTPS privately to tailnet devices.
+
+1. Create a private `.env` file alongside the Compose file. Set a random `CISCO_API_TOKEN` of at least 32 characters, the exact Vercel origin, optional website checks, and qBittorrent API credentials if you want download monitoring.
+2. Start the stack with `docker compose -f compose/cisco-agent/compose.host-network.yaml up -d --build`.
+3. Run `tailscale serve --bg --https=443 http://127.0.0.1:8001` on the host. Funnel stays disabled; the endpoint is visible only to your tailnet.
+4. In CiscoAI, open the server icon and enter `https://<host-tailnet-dns-name>/` and the same token. Keep the browser device connected to Tailscale.
+
+Use the dashboard's server icon after connecting to see live host, container, website, and optional download status. The dashboard polls while it is open; it does not send background alerts while closed.
+
+## Deploy with Portainer and a dedicated Tailscale device
 
 Use the Portainer endpoint connected to the same local Docker Engine as the homelab. Portainer does not support Compose image builds for remote Agent endpoints, so the connector stack's build entries require the local Docker socket endpoint.
 

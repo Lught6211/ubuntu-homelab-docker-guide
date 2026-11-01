@@ -1,0 +1,46 @@
+services:
+  cisco-docker-guard:
+    build:
+      context: ../..
+      dockerfile: compose/cisco-agent/Dockerfile
+    command: ["uvicorn", "app.docker_guard:app", "--host", "127.0.0.1", "--port", "2375"]
+    user: "0:0"
+    environment:
+      CISCO_MANAGED_SERVICES: ${CISCO_MANAGED_SERVICES:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    network_mode: host
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  cisco-homelab-agent:
+    build:
+      context: ../..
+      dockerfile: compose/cisco-agent/Dockerfile
+    command: ["uvicorn", "app.agent:app", "--host", "127.0.0.1", "--port", "8001"]
+    environment:
+      CISCO_API_TOKEN: ${CISCO_API_TOKEN:?Set CISCO_API_TOKEN in the private environment file}
+      CISCO_SERVER_LABEL: ${CISCO_SERVER_LABEL:-HOMELAB NODE}
+      CISCO_ALLOWED_ORIGINS: ${CISCO_ALLOWED_ORIGINS:-https://project-cisco.vercel.app,http://localhost:3000}
+      CISCO_MANAGED_SERVICES: ${CISCO_MANAGED_SERVICES:-}
+      CISCO_MONITORED_SITES: ${CISCO_MONITORED_SITES:-[]}
+      QBITTORRENT_URL: ${QBITTORRENT_URL:-}
+      QBITTORRENT_USERNAME: ${QBITTORRENT_USERNAME:-}
+      QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD:-}
+    network_mode: host
+    depends_on:
+      - cisco-docker-guard
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
