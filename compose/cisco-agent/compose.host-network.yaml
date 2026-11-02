@@ -34,6 +34,7 @@ services:
       QBITTORRENT_URL: ${QBITTORRENT_URL:-}
       QBITTORRENT_USERNAME: ${QBITTORRENT_USERNAME:-}
       QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD:-}
+      CISCO_DEPLOYER_URL: http://127.0.0.1:8002
     network_mode: host
     depends_on:
       - cisco-docker-guard
@@ -45,3 +46,33 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+
+  cisco-deployer:
+    build:
+      context: ../..
+      dockerfile: compose/cisco-agent/Dockerfile.deployer
+    command: ["uvicorn", "app.deployer:app", "--host", "127.0.0.1", "--port", "8002"]
+    user: "0:0"
+    environment:
+      CISCO_DEPLOY_TOKEN: ${CISCO_API_TOKEN:?Set CISCO_API_TOKEN in the private environment file}
+      CISCO_DEPLOY_REPO_URL: https://github.com/Lught6211/ubuntu-homelab-docker-guide.git
+      CISCO_DEPLOY_REPO_DIR: /workspace
+      CISCO_DEPLOY_ENV_FILE: /run/secrets/cisco-agent.env
+      CISCO_DEPLOY_STATE_FILE: /state/status.json
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CISCO_DEPLOY_REPO_HOST_DIR:?Set CISCO_DEPLOY_REPO_HOST_DIR to the guide repository directory}:/workspace
+      - ${CISCO_DEPLOY_ENV_FILE_HOST:?Set CISCO_DEPLOY_ENV_FILE_HOST to the private CISCO environment file}:/run/secrets/cisco-agent.env:ro
+      - cisco-deployer-state:/state
+    network_mode: host
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+volumes:
+  cisco-deployer-state:

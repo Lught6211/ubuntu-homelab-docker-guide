@@ -1,0 +1,18 @@
+FROM python:3.12-alpine3.24
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HOME=/tmp/cisco-deployer
+
+RUN apk add --no-cache docker-cli docker-cli-compose git
+
+WORKDIR /app
+COPY compose/cisco-agent/requirements-deployer.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+COPY compose/cisco-agent/app ./app
+
+# This container needs the Docker socket to rebuild the fixed CISCO agent stack.
+# Its HTTP listener is bound to host loopback, and only fixed operations are exposed.
+USER 0:0
+CMD ["uvicorn", "app.deployer:app", "--host", "127.0.0.1", "--port", "8002"]

@@ -54,6 +54,7 @@ QBITTORRENT_URL = os.getenv("QBITTORRENT_URL", "").rstrip("/")
 QBITTORRENT_USERNAME = os.getenv("QBITTORRENT_USERNAME", "")
 QBITTORRENT_PASSWORD = os.getenv("QBITTORRENT_PASSWORD", "")
 DOCKER_GUARD_URL = "http://127.0.0.1:2375"
+DEPLOYER_URL = os.getenv("CISCO_DEPLOYER_URL", "http://127.0.0.1:8002").rstrip("/")
 
 app = FastAPI(title="CISCO Homelab Agent", version="1.0.0", docs_url=None, redoc_url=None)
 app.add_middleware(
@@ -90,6 +91,26 @@ async def docker_request(method: str, path: str) -> httpx.Response:
             return await client.request(method, path)
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=503, detail="Docker monitor is unavailable") from exc
+
+
+async def deployer_request(method: str, path: str) -> dict[str, Any]:
+    if not TOKEN:
+        raise HTTPException(status_code=503, detail="CISCO deployment controls require a configured server token")
+    try:
+        async with httpx.AsyncClient(
+            base_url=DEPLOYER_URL,
+            timeout=30.0,
+            trust_env=False,
+            headers={"Authorization": f"Bearer {TOKEN}"},
+        ) as client:
+            response = await client.request(method, path)
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=503, detail="The private CISCO update service is unavailable") from exc
+    payload = response.json() if response.content else {}
+    if response.is_error:
+        detail = payload.get("detail") if isinstance(payload, dict) else None
+        raise HTTPException(status_code=response.status_code, detail=detail or "The CISCO update service rejected the request")
+    return payload if isinstance(payload, dict) else {}
 
 
 def read_host_metrics() -> dict[str, Any]:
@@ -214,6 +235,16 @@ async def overview(_: None = Depends(require_token)) -> dict[str, Any]:
         "sites": sites,
         "downloads": downloads,
     }
+
+
+@app.get("/api/cisco/deploy/status")
+async def deploy_status(refresh: bool = False, _: None = Depends(require_token)) -> dict[str, Any]:
+    return await deployer_request("GET", "/status?force=true" if refresh else "/status")
+
+
+@app.post("/api/cisco/deploy")
+async def deploy_cisco_agent(_: None = Depends(require_token)) -> dict[str, Any]:
+    return await deployer_request("POST", "/deploy")
 
 
 @app.post("/api/cisco/services/{service_id}/{action}")

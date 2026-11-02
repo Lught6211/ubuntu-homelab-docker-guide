@@ -8,8 +8,11 @@ The CISCO agent gives the CiscoAI dashboard a private, authenticated connection 
 - Start, stop, or restart only containers named in CISCO_MANAGED_SERVICES.
 - Pause or resume an individual qBittorrent download.
 - Report the server as unreachable when the private connection is unavailable.
+- Check the public guide's `main` branch for CISCO agent updates and, after explicit confirmation, update only the CISCO agent and Docker guard.
 
 The agent has no shell, command execution, container creation, container deletion, Docker logs, or volume deletion endpoint. A small Docker guard sits between the agent and the Docker socket. It permits container listing and start/stop/restart requests only, and independently checks the container allowlist for every operation. The guard still uses the Docker socket, which has administrator-level host privileges; keep this stack and its Tailscale identity under your control.
+
+The optional fixed deploy service is separate from the agent and listens only on host loopback. It uses the Docker socket to rebuild the two named CISCO services, so it has host administrator-equivalent power if compromised. Its API is reachable only through the authenticated agent, and it accepts no shell commands, repository URLs, paths, Compose files, or service names from the browser. It is limited to this public repository's `main` branch and the `cisco-docker-guard` / `cisco-homelab-agent` services. It checks for updates every ten minutes while the CiscoAI server panel is open, uses a five-minute remote revision cache, refuses a dirty checkout or non-`main` branch, requires an explicit user confirmation to deploy, validates Compose first, and attempts to restore the previous commit and services if deployment fails. It does not update other homelab applications.
 
 The storage percentage is the agent container's root filesystem view. It is not a per-mount inventory of every host disk or media volume.
 
@@ -17,8 +20,8 @@ The storage percentage is the agent container's root filesystem view. It is not 
 
 If Tailscale is already installed and connected on the Docker host, use `compose/cisco-agent/compose.host-network.yaml`. This reuses that host's existing tailnet identity; it does not need a new auth key or sidecar device. The agent and Docker guard bind only to `127.0.0.1`, and Tailscale Serve provides HTTPS privately to tailnet devices. You can set `CISCO_TAILSCALE_ALLOWED_USERS` to the comma-separated Tailscale login names allowed to use the dashboard; Serve adds the trusted `Tailscale-User-Login` header to requests. Because this deployment uses identity headers, keep the app bound to localhost and never enable Funnel.
 
-1. Create a private `.env` file alongside the Compose file. Set `CISCO_TAILSCALE_ALLOWED_USERS` to the account permitted to connect, a random `CISCO_API_TOKEN` of at least 32 characters for fallback token access, the exact Vercel origin, optional website checks, and qBittorrent API credentials if you want download monitoring.
-2. Start the stack with `docker compose -f compose/cisco-agent/compose.host-network.yaml up -d --build`.
+1. Create a private environment file. Set `CISCO_TAILSCALE_ALLOWED_USERS` to the account permitted to connect, a random `CISCO_API_TOKEN` of at least 32 characters for fallback token access, the exact Vercel origin, optional website checks, and qBittorrent API credentials if you want download monitoring. For the fixed update service, also set `CISCO_DEPLOY_REPO_HOST_DIR` to the absolute path of this clean Git clone on the server and `CISCO_DEPLOY_ENV_FILE_HOST` to the absolute path of the private environment file. Keep both values local to the server.
+2. Start or update the stack with `docker compose --env-file <private-env-file> -f compose/cisco-agent/compose.host-network.yaml up -d --build`. The first run builds the restricted agent, Docker guard, and loopback-only deploy service.
 3. Run `tailscale serve --bg --https=8443 http://127.0.0.1:8001` on the host, or choose another unused HTTPS port if 8443 is occupied. Funnel stays disabled; the endpoint is visible only to your tailnet.
 4. In CiscoAI, open the server icon and enter `https://<host-tailnet-dns-name>:8443/`; leave the token blank to use the allowed Tailscale login, or provide the configured fallback token. Keep the browser device connected to Tailscale.
 
@@ -58,6 +61,7 @@ Keep the requesting device connected to Tailscale while using the private server
 ## Use the dashboard or chat
 
 - Open the server icon to view live host, container, site, and download status.
+- The update area checks the approved guide repository when the panel opens and every ten minutes while it remains open. Use **DEPLOY UPDATE** only after reviewing the target commit and confirming the restart; progress appears in the same panel. The deployment rebuilds only the agent and Docker guard.
 - Select START, STOP, or RESTART on an allowlisted container. CISCO asks for confirmation before each action.
 - Pause/resume downloads from the qBittorrent list.
 - Chat requests such as check my server, what is running, what websites are down, start/stop/restart Jellyfin, or pause a download name use the private server connector directly. CISCO asks before changing a container. Download controls are individual pause/resume actions.
@@ -73,5 +77,6 @@ The chat actions are deterministic and bounded. They do not send a raw terminal 
 - **No websites listed:** add valid JSON to CISCO_MONITORED_SITES in Portainer and redeploy.
 - **qBittorrent is not configured:** set all three qBittorrent variables in Portainer; ensure its Web API address is reachable from the host and its Web UI is allowed from the connector.
 - **A restart button is missing:** verify the exact container name is present in CISCO_MANAGED_SERVICES.
+- **Update check or deployment is unavailable:** confirm the host-network stack includes `cisco-deployer`, both `CISCO_DEPLOY_REPO_HOST_DIR` and `CISCO_DEPLOY_ENV_FILE_HOST` point to the correct server-side paths, the checkout is clean on `main`, and the deploy service can reach GitHub. The deploy service does not accept or execute arbitrary commands.
 
 Do not copy tokens, passwords, local addresses, download names, or Tailscale keys into GitHub issues, the README, or browser screenshots.
